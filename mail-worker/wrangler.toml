@@ -1,19 +1,24 @@
 name = "cloud-mail"
+account_id = "bf9b1ec84333186c8bf4575566f98fcb"
 main = "src/index.js"
 compatibility_date = "2025-06-04"
 keep_vars = true
 
+[[routes]]
+pattern = "mail.leopm.top"
+custom_domain = true
+
 [observability]
 enabled = true
 
-#[[d1_databases]]
-#binding = "db"			#d1数据库绑定名默认不可修改
-#database_name = ""		#d1数据库名字
-#database_id = ""		#d1数据库id
+[[d1_databases]]
+binding = "db"
+database_name = "cloud-mail"
+database_id = "fe980304-7cd5-42fc-b726-dcf4541d68f6"
 
-#[[kv_namespaces]]
-#binding = "kv"			#kv绑定名默认不可修改
-#id = ""					#kv数据库id
+[[kv_namespaces]]
+binding = "kv"
+id = "645e559e76984556a8c08250a3da208e"
 
 #[[r2_buckets]]
 #binding = "r2"			#r2对象存储绑定名默认不可修改
@@ -36,6 +41,8 @@ crons = ["0 * * * *"]	#每小时执行；resetDaySendCount 仅在 UTC 0 点生�
 
 
 [vars]
+domain = ["leopm.top"]
+admin = "admin@leopm.top"
 #ai_model = ""			#ai模型,不填默认使用@cf/meta/llama-3.1-8b-instruct-fast
 #analysis_cache = false			#是否开启分析数据缓存
 #orm_log = false			#是否sql日志
