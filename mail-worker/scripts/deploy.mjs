@@ -40,6 +40,7 @@ try {
       try {
         const response = await fetch(`https://mail.leopm.top/api/init/${secret}`, {
           signal: AbortSignal.timeout(30000), redirect: 'error',
+          headers: { 'User-Agent': 'CloudMail-Deployment/1.0', Accept: 'text/plain' },
         });
         if (response.ok && (await response.text()).trim() === 'success') {
           initialized = true;
