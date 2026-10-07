@@ -10,7 +10,19 @@ const wrangler = fileURLToPath(new URL('../node_modules/wrangler/bin/wrangler.js
 const secrets = JSON.parse(execFileSync(process.execPath, [wrangler, 'secret', 'list', '--format', 'json'], {
   encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
 }));
-const needsBootstrap = !secrets.some(secret => secret.name === 'jwt_secret');
+const hasSecret = secrets.some(secret => secret.name === 'jwt_secret');
+let needsBootstrap = !hasSecret;
+if (hasSecret) {
+  const schema = JSON.parse(execFileSync(process.execPath, [wrangler, 'd1', 'execute', 'cloud-mail', '--remote', '--json',
+    '--command', "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'user'"], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  }));
+  if (!Array.isArray(schema) || schema.some(batch => batch.success !== true || !Array.isArray(batch.results))) {
+    throw new Error('Could not verify the database bootstrap state.');
+  }
+  // An empty schema cannot have user sessions; recover a failed initial bootstrap.
+  needsBootstrap = !schema.some(batch => batch.results.some(row => row.name === 'user'));
+}
 const secret = needsBootstrap ? randomBytes(48).toString('hex') : undefined;
 const temporary = needsBootstrap ? mkdtempSync(join(tmpdir(), 'cloud-mail-')) : undefined;
 
@@ -26,7 +38,7 @@ try {
     let initialized = false;
     for (let attempt = 0; attempt < 12; attempt++) {
       try {
-        const response = await fetch(`https://cloud-mail.ianchang0822.workers.dev/api/init/${secret}`, {
+        const response = await fetch(`https://mail.leopm.top/api/init/${secret}`, {
           signal: AbortSignal.timeout(30000), redirect: 'error',
         });
         if (response.ok && (await response.text()).trim() === 'success') {
